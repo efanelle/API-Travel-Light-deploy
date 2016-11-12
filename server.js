@@ -20,7 +20,7 @@ connection.connect(function(err) {
     console.error('error connecting: ' + err.stack);
     return;
   }
-  console.log('connected as id ' + connection.threadId);
+  console.log('connected as id ' + connection.threadId ' to ' + process.enc.RDS_HOSTNAME);
 });
 
 app.use(morgan('dev'))
