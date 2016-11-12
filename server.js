@@ -7,6 +7,6 @@ app = express();
 
 app.use(express.static('TLdist'))
 
-app.listen(port, ip, function() {
-  console.log('The magic is on ' + ip + ':' + port);
+app.listen(process.env.PORT, function() {
+  console.log('The magic is on ' + ip + ':' + process.env.PORT);
 });
