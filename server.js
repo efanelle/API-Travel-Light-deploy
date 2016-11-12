@@ -2,7 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const mysql = require('mysql');
 
-const port = process.env.PORT || 49151;
+const port = process.env.PORT || 1337;
 const ip = process.env.IP || '127.0.0.1';
 app = express();
 
@@ -20,11 +20,15 @@ connection.connect(function(err) {
     console.error('error connecting: ' + err.stack);
     return;
   }
-  console.log('connected as id ' + connection.threadId + ' to ' + process.env.RDS_HOSTNAME);
+  console.log('connected as id ' + connection.threadId);
 });
 
 app.use(morgan('dev'))
 app.use(express.static('TLdist'))
+
+app.get('/test', (req, res) => {
+  res.status(200).send('working')
+})
 
 app.listen(port, function() {
   console.log('The magic is on ' + ip + ':' + port);
