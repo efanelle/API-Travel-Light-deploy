@@ -11,8 +11,7 @@ const connection = mysql.createConnection({
   host     : process.env.RDS_HOSTNAME,
   user     : process.env.RDS_USERNAME,
   password : process.env.RDS_PASSWORD,
-  port     : process.env.RDS_PORT,
-  database : 'AirportLocations'
+  port     : process.env.RDS_PORT
 });
 
 //Testing DB connection
@@ -24,7 +23,7 @@ connection.connect(function(err) {
   console.log('connected as id ' + connection.threadId);
 });
 
-connection.query(`select * from Airports where City = 'Atlanta'`, [], (err, results) => {
+connection.query(`show databases`, [], (err, results) => {
   console.log(err)
   console.log(results)
 })
