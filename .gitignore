@@ -3,6 +3,7 @@
 # compiled output
 /TravelLight
 /tmp
+/TLdist
 
 # dependencies
 /node_modules

@@ -26,9 +26,8 @@ connection.connect(function(err) {
 app.use(morgan('dev'))
 app.use(express.static('TLdist'))
 
-app.get('/test', (req, res) => {
-  res.status(200).send('working')
-})
+// Routes
+require('./routes/routes')(app)
 
 app.listen(port, function() {
   console.log('The magic is on ' + ip + ':' + port);
