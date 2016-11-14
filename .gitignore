@@ -4,6 +4,7 @@
 /TravelLight
 /tmp
 /TLdist
+Airports.sql
 
 # dependencies
 /node_modules
