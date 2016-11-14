@@ -4,10 +4,21 @@ const distance = require('../helpers/distance');
 const db = require('../db/connection');
 const request = require('request');
 const jStat = require('jStat').jStat
+const cheerio = require('cheerio')
 
 
 
 module.exports = function(app) {
+  // Testing price crawler
+  app.get('/test', (req, res) => {
+    request('https://www.kayak.com/flights/ATL-BOS/2016-11-25', (err, response, body) => {
+      const $ = cheerio.load(body)
+      let bodyText = $('html > body').text()
+      res.status(200).send(request)
+    })
+  })
+
+
   // Retreive all US airports
   app.get('/api/airports', (req, res) => {
     db.Airports.findAll({
@@ -84,7 +95,7 @@ module.exports = function(app) {
             console.log(err)
           }
           // Get array of prices
-          let priceArray = JSON.parse(body).Quotes
+          let priceArray = body.Quotes
             .map(quote => quote.MinPrice);
           // Generate statistics object
           let jStatPrices = jStat(priceArray);
@@ -107,7 +118,8 @@ module.exports = function(app) {
       } else {
         let minPrice = body.Quotes[0].MinPrice
         console.log(minPrice)
-        res.status(200).send({price: minPrice, type: 'single day'})
+        res.status(200).send(body)
+        //res.status(200).send({price: minPrice, type: 'single day'})
       }
     })
 
