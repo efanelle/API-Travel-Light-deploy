@@ -7,6 +7,12 @@ const connection = new Sequelize('AirportLocations', process.env.RDS_USERNAME, p
   host: process.env.RDS_HOSTNAME,
   port: process.env.RDS_PORT
 })
+connection.sync()
+.then(function(){
+  console.log('connection successful');
+},function(err){
+  console.log(err);
+});
 
 // Sync with Airport locations table
 const Airports = connection.define('Airports', {
@@ -24,7 +30,7 @@ const Airports = connection.define('Airports', {
   Timezone: Sequelize.STRING(17),
   DST:     Sequelize.STRING(15),
   TZ_db_Timezone: Sequelize.STRING(22)
-}, {timestamps: false})
+}, {timestamps: false});
 
 Airports.sync();
 

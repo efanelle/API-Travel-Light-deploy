@@ -20,6 +20,57 @@ module.exports = function(app) {
 
 
   // Retreive all US airports
+
+
+  app.get('/api/carTimeAndDistance', (req,res) => {
+    let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
+    let origin = [37.618972,-122.374889];//SFO
+    let destination = [40.639751,-73.778925]; //JFK
+    const options = {
+      url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
+    };
+    request(options, (err, response, body) => {
+      if (err) {
+        console.log(err);
+      }
+      /* SAMPLE RESPONSE:
+        { 
+          "destination_addresses" : [ "Terminal 4, Jamaica, NY 11430, USA" ], 
+          "origin_addresses" : [ "Terminal 2, San Francisco, CA 94128, USA" ], 
+          "rows" : [ { 
+            "elements" : [ { 
+              "distance" : { "text" : "2,940 mi", "value" : 4732132 }, 
+              "duration" : { "text" : "1 day 19 hours", "value" : 153012 }, "status" : "OK" 
+            } ] 
+          } ], 
+          "status" : "OK" 
+        }
+      */
+      //parsing data for distance output in meters, converted to miles
+      let distance = JSON.parse(body).rows[0].elements[0].distance.value/1609.34; //2940 Miles
+
+      //parsing data for time output in seconds, converted to hours
+      let carTime = JSON.parse(body).rows[0].elements[0].duration.value/3600;//1 day 19 hrs
+
+      let emissionPerMileSml = .8;
+      let emissionPerMileMed = 1.0;
+      let emissionPerMileLrg = 1.2;  //1.2 for light truck/SUV
+      const carEmissions = ((emissionPerMileSml+emissionPerMileMed+ emissionPerMileLrg) / 3)*distance;
+      let costPerMileSml = .1239;
+      let costPerMileMed = .1472;
+      let costPerMileLrg = .1812;
+      const costPerMile = (costPerMileSml+costPerMileMed+costPerMileLrg)/3;
+      const carCost = distance*costPerMile;
+      const responseObj = {
+        carCost: carCost,//Dollars
+        carEmissions: carEmissions,//lbs of CO2
+        carTime: carTime//hours
+      } ;
+
+      res.status(200).send(JSON.stringify(responseObj));
+    });
+  });
+
   app.get('/api/airports', (req, res) => {
     db.Airports.findAll({
       where: {
