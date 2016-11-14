@@ -33,9 +33,9 @@ module.exports = function(app) {
     let currency = 'USD';
     let locale = 'en-US';
     let origin = 'ATL';
-    let destination = 'SFO';
-    let outboundDate = '2016-12-07';
-    let inboundDate = '2016-12-10';
+    let destination = 'DEN';
+    let outboundDate = '2016-12-10';
+    let inboundDate = '2016-12-14';
     let locationSchema = 'Iata';
     let passengers = 1
 
@@ -65,33 +65,50 @@ module.exports = function(app) {
   //     console.log(response)
   //   })
 
-    const options = {
+    let options = {
       url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/${inboundDate}?apiKey=${process.env.SKYSCANNER_API_KEY}`
     }
     request(options, (err, response, body) => {
       if (err) {
         console.log(err)
       }
-      // Get array of prices
-      let priceArray = JSON.parse(body).Quotes
-        .map(quote => quote.MinPrice);
-      // Generate statistics object
-      let jStatPrices = jStat(priceArray);
-      // Find mean and standard deviation
-      let meanPrice = jStatPrices.mean();
-      let range = jStatPrices.stdev()
-      // Filter to prices within 2.5 stdevs of the mean
-      let filteredPrices = priceArray.filter(price => {
-        return price < meanPrice + range * 2.5 && price > meanPrice - range * 2.5
-      })
-      // Generate stats object from filtered prices
-      let filteredJStatPrices = jStat(filteredPrices);
-      const priceObj = {
-        low: filteredJStatPrices.min(),
-        med: filteredJStatPrices.mean(),
-        high: filteredJStatPrices.max()
+      body = JSON.parse(body)
+      if (body.Quotes.length === 0) {
+        outboundDate = outboundDate.slice(0, -3);
+        inboundDate = inboundDate.slice(0, -3);
+        let options = {
+          url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/${inboundDate}?apiKey=${process.env.SKYSCANNER_API_KEY}`
+        }
+        request(options, (err, response, body) => {
+          if (err) {
+            console.log(err)
+          }
+          // Get array of prices
+          let priceArray = JSON.parse(body).Quotes
+            .map(quote => quote.MinPrice);
+          // Generate statistics object
+          let jStatPrices = jStat(priceArray);
+          // Find mean and standard deviation
+          let meanPrice = jStatPrices.mean();
+          let range = jStatPrices.stdev()
+          // Filter to prices within 2.5 stdevs of the mean
+          let filteredPrices = priceArray.filter(price => {
+            return price < meanPrice + range * 2.5 && price > meanPrice - range * 2.5
+          })
+          // Generate stats object from filtered prices
+          let filteredJStatPrices = jStat(filteredPrices);
+          const priceObj = {
+            low: filteredJStatPrices.min(),
+            med: filteredJStatPrices.mean(),
+            high: filteredJStatPrices.max()
+          }
+          res.status(200).send({price: priceObj.low, type: 'average'})
+        })
+      } else {
+        let minPrice = body.Quotes[0].MinPrice
+        console.log(minPrice)
+        res.status(200).send({price: minPrice, type: 'single day'})
       }
-      res.status(200).send(body)
     })
 
   })
