@@ -3,27 +3,26 @@ const Promise = require('bluebird');
 const distance = require('../helpers/distance');
 const db = require('../db/connection');
 const request = require('request');
-const jStat = require('jStat').jStat
-// const cheerio = require('cheerio')
+const jStat = require('jStat').jStat;
+const cheerio = require('cheerio')
 
 
 
 module.exports = function(app) {
-  // Testing price crawler
-  // app.get('/test', (req, res) => {
-  //   request('https://www.kayak.com/flights/ATL-BOS/2016-11-25', (err, response, body) => {
-  //     const $ = cheerio.load(body)
-  //     let bodyText = $('html > body').text()
-  //     res.status(200).send(request)
-  //   })
-  // })
+  //Testing price crawler
+  app.get('/test', (req, res) => {
+    request('https://www.kayak.com/flights/ATL-BOS/2016-11-25', (err, response, body) => {
+      const $ = cheerio.load(body)
+      let bodyText = $('html > body').text()
+      res.status(200).send(request)
+    })
+  })
 
 
-  // Retreive all US airports
-
-
+  // Retreive car distance and location data
   app.get('/api/cars', (req,res) => {
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
+    //example data
     let origin = [37.618972,-122.374889];//SFO
     let destination = [40.639751,-73.778925]; //JFK
     const options = {
@@ -47,10 +46,12 @@ module.exports = function(app) {
         }
       */
       //parsing data for distance output in meters, converted to miles
-      let distance = JSON.parse(body).rows[0].elements[0].distance.value/1609.34; //2940 Miles
+      const MetersPerMile = 1609.34;
+      let distance = JSON.parse(body).rows[0].elements[0].distance.value/MetersPerMile; //2940 Miles
 
       //parsing data for time output in seconds, converted to hours
-      let carTime = JSON.parse(body).rows[0].elements[0].duration.value/3600;//1 day 19 hrs
+      const SecondsPerHour = 3600;
+      let carTime = JSON.parse(body).rows[0].elements[0].duration.value/SecondsPerHour;//1 day 19 hrs
       let carTimeText = JSON.parse(body).rows[0].elements[0].duration.text;//1 day 19 hrs
 
       let emissionPerMileSml = .8;
@@ -77,6 +78,7 @@ module.exports = function(app) {
     });
   });
 
+//retrieving all US airports
   app.get('/api/airports', (req, res) => {
     db.Airports.findAll({
       where: {
