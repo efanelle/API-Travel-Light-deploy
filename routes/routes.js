@@ -143,15 +143,15 @@ module.exports = function(app) {
       let pointA = [39, -104]
       let pointB = [33, -84]
       let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
-      let duration = '';
-      function time(dist){
-        let time= dist/planeInfo.planeSpeed;
-        time = time * 60 + 30 //added 30 min to account for slower speeds during takeoff and landing
+      let time= planeDist/planeInfo.planeSpeed;
+
+      function timeCalc(time){
+        var minutes = time * 60 + 30 //added 30 min to account for slower speeds during takeoff and landing
         var hour = 0, min, duration;
-          while(time > 60) {
-            time -= 60;
+          while(minutes > 60) {
+            minutes -= 60;
             hour+=1;
-            min = Math.round(time);
+            min = Math.round(minutes);
           }
           if (hour > 1) {
             duration = hour + ' hours, ' + min + ' min';
@@ -164,7 +164,8 @@ module.exports = function(app) {
         }
 
       let planeStats = {
-        duration: time(planeDist), //hrs and minutes
+        duration: timeCalc(time), //hrs and minutes
+        time: time,
         emissions: Math.round(planeDist * planeInfo.planeEmissions.perMile*100)/100
         //lbs of CO2
       }
