@@ -16,9 +16,9 @@ const carEmissions = {
 //reported by AAA
 //cents per mile - includes gas and maintenance costs
 const carCosts = {
-  small: 12.39,
-  med: 14.72,
-  large: 18.12
+  small: 0.1239,
+  med: 0.1472,
+  large: 0.1812
 };
 
 

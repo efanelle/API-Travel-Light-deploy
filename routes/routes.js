@@ -4,7 +4,10 @@ const distance = require('../helpers/distance');
 const db = require('../db/connection');
 const request = require('request');
 const jStat = require('jStat').jStat;
-const cheerio = require('cheerio')
+const cheerio = require('cheerio');
+const planeInfo = require('../data/planes');
+const carInfo = require('../data/cars');
+
 
 
 
@@ -34,16 +37,16 @@ module.exports = function(app) {
         console.log(err);
       }
       /* SAMPLE RESPONSE:
-        { 
-          "destination_addresses" : [ "Terminal 4, Jamaica, NY 11430, USA" ], 
-          "origin_addresses" : [ "Terminal 2, San Francisco, CA 94128, USA" ], 
-          "rows" : [ { 
-            "elements" : [ { 
-              "distance" : { "text" : "2,940 mi", "value" : 4732132 }, 
-              "duration" : { "text" : "1 day 19 hours", "value" : 153012 }, "status" : "OK" 
-            } ] 
-          } ], 
-          "status" : "OK" 
+        {
+          "destination_addresses" : [ "Terminal 4, Jamaica, NY 11430, USA" ],
+          "origin_addresses" : [ "Terminal 2, San Francisco, CA 94128, USA" ],
+          "rows" : [ {
+            "elements" : [ {
+              "distance" : { "text" : "2,940 mi", "value" : 4732132 },
+              "duration" : { "text" : "1 day 19 hours", "value" : 153012 }, "status" : "OK"
+            } ]
+          } ],
+          "status" : "OK"
         }
       */
       //parsing data for distance output in meters, converted to miles
@@ -60,14 +63,14 @@ module.exports = function(app) {
       let emissionPerMileLrg = 1.2;  //1.2 for light truck/SUV
 
       const carEmissions = ((emissionPerMileSml+emissionPerMileMed+ emissionPerMileLrg) / 3)*distance;
-      
+
       let costPerMileSml = .1239;
       let costPerMileMed = .1472;
       let costPerMileLrg = .1812;
-      
+
       const costPerMile = (costPerMileSml+costPerMileMed+costPerMileLrg)/3;
       const carCost = distance*costPerMile;
-      
+
       const responseObj = {
         carCost: carCost,//Dollars
         carEmissions: carEmissions,//lbs of CO2
@@ -98,7 +101,7 @@ module.exports = function(app) {
   // Calculate distance btwn 2 coordinates
   // ie. distance.caclulateDist([34, 84], [35, 85])
 
-    // Get fligt price from skyscanner
+    // Get flight price from skyscanner
     // Can give user a direct flights only option
     let market = 'US';
     let currency = 'USD';
@@ -108,7 +111,7 @@ module.exports = function(app) {
     let outboundDate = '2016-12-10';
     let inboundDate = '2016-12-14';
     let locationSchema = 'Iata';
-    let passengers = 1
+    let passengers = 1;
 
   // Open session to populate prices
   // Need live flight data access to use this method
@@ -135,6 +138,37 @@ module.exports = function(app) {
   //   }, (err, response, body) => {
   //     console.log(response)
   //   })
+
+
+      let pointA = [39, -104]
+      let pointB = [33, -84]
+      let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
+      let duration = '';
+      function time(dist){
+        let time= dist/planeInfo.planeSpeed;
+        time = time * 60 + 30 //added 30 min to account for slower speeds during takeoff and landing
+        var hour = 0, min, duration;
+          while(time > 60) {
+            time -= 60;
+            hour+=1;
+            min = Math.round(time);
+          }
+          if (hour > 1) {
+            duration = hour + ' hours, ' + min + ' min';
+          } else if( hour === 1) {
+            duration = hour + ' hour, ' + min + ' min';
+          } else {
+            duration = min + ' min';
+          }
+          return duration;
+        }
+
+      let planeStats = {
+        duration: time(planeDist), //hrs and minutes
+        emissions: Math.round(planeDist * planeInfo.planeEmissions.perMile*100)/100
+        //lbs of CO2
+      }
+      console.log(planeStats);
 
     let options = {
       url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/${inboundDate}?apiKey=${process.env.SKYSCANNER_API_KEY}`
@@ -180,6 +214,7 @@ module.exports = function(app) {
         console.log(minPrice)
         res.status(200).send(body)
         //res.status(200).send({price: minPrice, type: 'single day'})
+        // res.status(200).send({price: minPrice, type: 'single day', duration: planeStats.duration, emissons: planeStats.emissions})
       }
     })
 
