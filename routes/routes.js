@@ -137,7 +137,30 @@ module.exports = function(app) {
   //   }, (err, response, body) => {
   //     console.log(response)
   //   })
+      let pointA = [39, -104]
+      let pointB = [33, -84]
+      let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
+      let duration = '';
+      function time(dist){
+        let time= dist/planeInfo.planeSpeed;
+        time = time * 60 + 30 //added 30 min to account for slower speeds during takeoff and landing
+        var hour = 0, min, duration;
+          while(time > 60) {
+            time -= 60;
+            hour+=1;
+            min = Math.round(time);
+          }
+          if (hour > 1) {
+            duration = hour + ' hours, ' + min + ' min';
+          } else if( hour === 1) {
+            duration = hour + ' hour, ' + min + ' min';
+          } else {
+            duration = min + ' min';
+          }
+          return duration;
+        }
 
+<<<<<<< HEAD
 let pointA = [39, -104]
       let pointB = [33, -84]
       let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
@@ -161,16 +184,21 @@ let pointA = [39, -104]
           return duration;
         }
 
+=======
+>>>>>>> Info for flight duration/co2 emissions added
       let planeStats = {
         duration: time(planeDist), //hrs and minutes
         emissions: Math.round(planeDist * planeInfo.planeEmissions.perMile*100)/100
         //lbs of CO2
       }
       console.log(planeStats);
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> Info for flight duration/co2 emissions added
 
     let options = {
       url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/${inboundDate}?apiKey=${process.env.SKYSCANNER_API_KEY}`
@@ -216,6 +244,7 @@ let pointA = [39, -104]
         console.log(minPrice)
         res.status(200).send(body)
         //res.status(200).send({price: minPrice, type: 'single day'})
+        // res.status(200).send({price: minPrice, type: 'single day', duration: planeStats.duration, emissons: planeStats.emissions})
       }
     })
 
