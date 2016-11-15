@@ -23,7 +23,8 @@ module.exports = function(app) {
   app.get('/api/cars', (req,res) => {
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
     //example data
-    let origin = [37.618972,-122.374889];//SFO
+    // let origin = [37.618972,-122.374889];//SFO
+    let origin = [38.852083,-77.037722];//DCA
     let destination = [40.639751,-73.778925]; //JFK
     const options = {
       url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
