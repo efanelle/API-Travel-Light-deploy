@@ -14,11 +14,13 @@ const carInfo = require('../data/cars');
 module.exports = function(app) {
   //Testing price crawler
   app.get('/test', (req, res) => {
-    request('https://www.kayak.com/flights/ATL-BOS/2016-11-25', (err, response, body) => {
-      const $ = cheerio.load(body)
-      let bodyText = $('html > body').text()
-      res.status(200).send(request)
-    })
+    // request('https://www.kayak.com/flights/ATL-SFO/2016-11-25', (err, response, body) => {
+    //   const $ = cheerio.load(body)
+    //   let timeText = $('div.duration').text()
+    //    console.log(timeText)
+    //   res.status(200).send({time: timeText, body: $('html > body').text()})
+    // })
+    `https://api.flightstats.com/flex/schedules/${protocol}/v1/${format}/${...}`
   })
 
 
