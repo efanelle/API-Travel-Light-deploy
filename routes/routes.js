@@ -27,8 +27,8 @@ module.exports = function(app) {
   })
 
   app.get('/api/normalizers', (req, res) => {
-    let origin = [38.852083,-77.037722];//DCA
-    let destination = [40.639751,-73.778925]; //JFK
+    let origin = [39.95,-75.17];//DCA
+    let destination = [33.74,-84.38]; //JFK
     let dist = distance.calculateDist(origin, destination)
     const averageObj = {
       distance: dist,
@@ -43,8 +43,8 @@ module.exports = function(app) {
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
     //example data
     // let origin = [37.618972,-122.374889];//SFO
-    let origin = [38.852083,-77.037722];//DCA
-    let destination = [40.639751,-73.778925]; //JFK
+    let origin = [39.95,-75.17];//DCA
+    let destination = [33.74,-84.38]; //JFK
     const options = {
       url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
     };
@@ -104,9 +104,9 @@ module.exports = function(app) {
     let market = 'US';
     let currency = 'USD';
     let locale = 'en-US';
-    let origin = 'JFK';
-    let destination = 'SFO';
-    let outboundDate = '2016-12-26';
+    let origin = 'PHL';
+    let destination = 'ATL';
+    let outboundDate = '2016-12-11';
     let locationSchema = 'Iata';
     let passengers = 1;
     let year = outboundDate.slice(0, 4);
