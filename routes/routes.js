@@ -8,7 +8,7 @@ const jStat = require('jStat').jStat;
 const planeInfo = require('../data/planes');
 const carInfo = require('../data/cars');
 const timeCalc = require('../helpers/time')
-
+const normalizers = require('../data/averages')
 
 
 module.exports = function(app) {
@@ -26,6 +26,18 @@ module.exports = function(app) {
     })
   })
 
+  app.get('/api/normalizers', (req, res) => {
+    let origin = [38.852083,-77.037722];//DCA
+    let destination = [40.639751,-73.778925]; //JFK
+    let dist = distance.calculateDist(origin, destination)
+    const averageObj = {
+      distance: dist,
+      hours: normalizers.timeCalc(dist) * dist,
+      price: normalizers.costCalc(dist) * dist,
+      co2: normalizers.emissions * dist
+    }
+    res.status(200).send(averageObj)
+  })
   // Retreive car distance and location data
   app.get('/api/cars', (req,res) => {
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
@@ -102,7 +114,8 @@ module.exports = function(app) {
     let day = outboundDate.slice(8, 10);
     let pointA = [39, -104]
     let pointB = [33, -84]
-    let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
+    let planeDist = distance.calculateDist(pointA, pointB); //DEN to ATL
+
 
     let planeStats = {
       emissions: Math.round(planeDist * planeInfo.planeEmissions.perMile*100)/100
@@ -190,6 +203,7 @@ module.exports = function(app) {
         })
       })
     Promise.all([p1, p2])
+    .catch(error => console.log(error))
     .then(results => {
       const finalObj = Object.assign({}, results[0], results[1])
       res.status(200).send(finalObj)
