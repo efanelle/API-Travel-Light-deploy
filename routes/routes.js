@@ -223,3 +223,86 @@ module.exports = function(app) {
   //   }, (err, response, body) => {
   //     console.log(response)
   //   })
+
+      let pointA = [39, -104]
+      let pointB = [33, -84]
+      let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
+      let time= planeDist/planeInfo.planeSpeed;
+
+      function timeCalc(time){
+        var minutes = time * 60 + 30 //added 30 min to account for slower speeds during takeoff and landing
+        var hour = 0, min, duration;
+          while(minutes > 60) {
+            minutes -= 60;
+            hour+=1;
+            min = Math.round(minutes);
+          }
+          if (hour > 1) {
+            duration = hour + ' hours, ' + min + ' min';
+          } else if( hour === 1) {
+            duration = hour + ' hour, ' + min + ' min';
+          } else {
+            duration = min + ' min';
+          }
+          return duration;
+        }
+
+      let planeStats = {
+        duration: timeCalc(time), //hrs and minutes
+        time: time,
+        emissions: Math.round(planeDist * planeInfo.planeEmissions.perMile*100)/100
+        //lbs of CO2
+      }
+      console.log(planeStats);
+
+    let options = {
+      url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/${inboundDate}?apiKey=${process.env.SKYSCANNER_API_KEY}`
+    }
+    request(options, (err, response, body) => {
+      if (err) {
+        console.log(err)
+      }
+      body = JSON.parse(body)
+      if (body.Quotes.length === 0) {
+        outboundDate = outboundDate.slice(0, -3);
+        inboundDate = inboundDate.slice(0, -3);
+        let options = {
+          url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/${inboundDate}?apiKey=${process.env.SKYSCANNER_API_KEY}`
+        }
+        request(options, (err, response, body) => {
+          if (err) {
+            console.log(err)
+          }
+          // Get array of prices
+          let priceArray = body.Quotes
+            .map(quote => quote.MinPrice);
+          // Generate statistics object
+          let jStatPrices = jStat(priceArray);
+          // Find mean and standard deviation
+          let meanPrice = jStatPrices.mean();
+          let range = jStatPrices.stdev()
+          // Filter to prices within 2.5 stdevs of the mean
+          let filteredPrices = priceArray.filter(price => {
+            return price < meanPrice + range * 2.5 && price > meanPrice - range * 2.5
+          })
+          // Generate stats object from filtered prices
+          let filteredJStatPrices = jStat(filteredPrices);
+          const priceObj = {
+            low: filteredJStatPrices.min(),
+            med: filteredJStatPrices.mean(),
+            high: filteredJStatPrices.max()
+          }
+          res.status(200).send({price: priceObj.low, type: 'average'})
+        })
+      } else {
+        let minPrice = body.Quotes[0].MinPrice
+        console.log(minPrice)
+        //res.status(200).send(body)
+        //res.status(200).send({price: minPrice, type: 'single day'})
+        res.status(200).send({price: minPrice, type: 'single day', duration: planeStats.duration, emissons: planeStats.emissions})
+      }
+    })
+
+  })
+
+}
