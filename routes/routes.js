@@ -8,7 +8,7 @@ const jStat = require('jStat').jStat;
 const planeInfo = require('../data/planes');
 const carInfo = require('../data/cars');
 const timeCalc = require('../helpers/time')
-
+const normalizers = require('../data/averages')
 
 
 module.exports = function(app) {
@@ -26,13 +26,25 @@ module.exports = function(app) {
     })
   })
 
+  app.get('/api/normalizers', (req, res) => {
+    let origin = [40.71,-114.03];//Den
+    let destination = [33.74,-84.38]; //ATL
+    let dist = distance.calculateDist(origin, destination)
+    const averageObj = {
+      distance: dist,
+      time: normalizers.timeCalc(dist) * dist,
+      cost: normalizers.costCalc(dist) * dist,
+      emissions: normalizers.emissions * dist
+    }
+    res.status(200).send(averageObj)
+  })
   // Retreive car distance and location data
   app.get('/api/cars', (req,res) => {
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
     //example data
     // let origin = [37.618972,-122.374889];//SFO
-    let origin = [38.852083,-77.037722];//DCA
-    let destination = [40.639751,-73.778925]; //JFK
+    let origin = [40.71,-114.03];//Denver
+    let destination = [33.74,-84.38]; //ATL
     const options = {
       url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
     };
@@ -76,10 +88,11 @@ module.exports = function(app) {
       const carCost = distance*costPerMile;
 
       const responseObj = {
-        carCost: carCost,//Dollars
-        carEmissions: carEmissions,//lbs of CO2
-        carTime: carTime,//hours
-        carTimeText: carTimeText
+        mode: 'car',
+        cost: carCost,//Dollars
+        emissions: carEmissions,//lbs of CO2
+        time: carTime,//hours
+        timeText: carTimeText
       } ;
 
       res.status(200).send(JSON.stringify(responseObj));
@@ -92,9 +105,9 @@ module.exports = function(app) {
     let market = 'US';
     let currency = 'USD';
     let locale = 'en-US';
-    let origin = 'JFK';
-    let destination = 'SFO';
-    let outboundDate = '2016-12-26';
+    let origin = 'DEN';
+    let destination = 'ATL';
+    let outboundDate = '2016-12-11';
     let locationSchema = 'Iata';
     let passengers = 1;
     let year = outboundDate.slice(0, 4);
@@ -102,7 +115,8 @@ module.exports = function(app) {
     let day = outboundDate.slice(8, 10);
     let pointA = [39, -104]
     let pointB = [33, -84]
-    let planeDist = distance.caclulateDist(pointA, pointB); //DEN to ATL
+    let planeDist = distance.calculateDist(pointA, pointB); //DEN to ATL
+
 
     let planeStats = {
       emissions: Math.round(planeDist * planeInfo.planeEmissions.perMile*100)/100
@@ -148,7 +162,7 @@ module.exports = function(app) {
                 })
                 // add .5 to account for runway time
                 let avgTime = jStat.mean(times) + .5
-                resolve({time: avgTime, timeString: timeCalc(avgTime)})
+                resolve({mode: 'plane', time: avgTime, timeText: timeCalc(avgTime)})
             })
           })
         })
@@ -181,15 +195,16 @@ module.exports = function(app) {
               // Generate stats object from filtered prices
               let filteredJStatPrices = jStat(filteredPrices);
               let minPrice = filteredJStatPrices.min()
-              resolve({price: minPrice, type: 'average', emissons: planeStats.emissions})
+              resolve({cost: minPrice, type: 'average', emissions: planeStats.emissions})
             })
           } else {
             let minPrice = body.Quotes[0].MinPrice
-            resolve({price: minPrice, type: 'single day', emissons: planeStats.emissions})
+            resolve({cost: minPrice, type: 'single day', emissions: planeStats.emissions})
           }
         })
       })
     Promise.all([p1, p2])
+    .catch(error => console.log(error))
     .then(results => {
       const finalObj = Object.assign({}, results[0], results[1])
       res.status(200).send(finalObj)

@@ -4,7 +4,7 @@ Number.prototype.toRadians = function() {
   return this * Math.PI / 180;
 }
 
-exports.caclulateDist = function (coor1, coor2) {
+exports.calculateDist = function (coor1, coor2) {
   let [lat1, lon1] = coor1;
   let [lat2, lon2] = coor2;
   let R = 3959; // miles
@@ -21,4 +21,3 @@ exports.caclulateDist = function (coor1, coor2) {
   let distance = R * c;
   return distance
 }
-
