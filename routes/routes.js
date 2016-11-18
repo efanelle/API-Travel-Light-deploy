@@ -27,14 +27,14 @@ module.exports = function(app) {
   })
 
   app.get('/api/normalizers', (req, res) => {
-    let origin = [39.95,-75.17];//DCA
-    let destination = [33.74,-84.38]; //JFK
+    let origin = [40.71,-114.03];//Den
+    let destination = [33.74,-84.38]; //ATL
     let dist = distance.calculateDist(origin, destination)
     const averageObj = {
       distance: dist,
-      hours: normalizers.timeCalc(dist) * dist,
-      price: normalizers.costCalc(dist) * dist,
-      co2: normalizers.emissions * dist
+      time: normalizers.timeCalc(dist) * dist,
+      cost: normalizers.costCalc(dist) * dist,
+      emissions: normalizers.emissions * dist
     }
     res.status(200).send(averageObj)
   })
@@ -43,8 +43,8 @@ module.exports = function(app) {
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
     //example data
     // let origin = [37.618972,-122.374889];//SFO
-    let origin = [39.95,-75.17];//DCA
-    let destination = [33.74,-84.38]; //JFK
+    let origin = [40.71,-114.03];//Denver
+    let destination = [33.74,-84.38]; //ATL
     const options = {
       url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
     };
@@ -88,10 +88,11 @@ module.exports = function(app) {
       const carCost = distance*costPerMile;
 
       const responseObj = {
-        carCost: carCost,//Dollars
-        carEmissions: carEmissions,//lbs of CO2
-        carTime: carTime,//hours
-        carTimeText: carTimeText
+        mode: 'car',
+        cost: carCost,//Dollars
+        emissions: carEmissions,//lbs of CO2
+        time: carTime,//hours
+        timeText: carTimeText
       } ;
 
       res.status(200).send(JSON.stringify(responseObj));
@@ -104,7 +105,7 @@ module.exports = function(app) {
     let market = 'US';
     let currency = 'USD';
     let locale = 'en-US';
-    let origin = 'PHL';
+    let origin = 'DEN';
     let destination = 'ATL';
     let outboundDate = '2016-12-11';
     let locationSchema = 'Iata';
@@ -161,7 +162,7 @@ module.exports = function(app) {
                 })
                 // add .5 to account for runway time
                 let avgTime = jStat.mean(times) + .5
-                resolve({time: avgTime, timeString: timeCalc(avgTime)})
+                resolve({mode: 'plane', time: avgTime, timeText: timeCalc(avgTime)})
             })
           })
         })
@@ -194,11 +195,11 @@ module.exports = function(app) {
               // Generate stats object from filtered prices
               let filteredJStatPrices = jStat(filteredPrices);
               let minPrice = filteredJStatPrices.min()
-              resolve({price: minPrice, type: 'average', emissons: planeStats.emissions})
+              resolve({cost: minPrice, type: 'average', emissions: planeStats.emissions})
             })
           } else {
             let minPrice = body.Quotes[0].MinPrice
-            resolve({price: minPrice, type: 'single day', emissons: planeStats.emissions})
+            resolve({cost: minPrice, type: 'single day', emissions: planeStats.emissions})
           }
         })
       })
