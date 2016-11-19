@@ -26,25 +26,27 @@ module.exports = function(app) {
     })
   })
 
-  app.get('/api/normalizers', (req, res) => {
-    let origin = [40.71,-114.03];//Den
-    let destination = [33.74,-84.38]; //ATL
+  app.get('/api/normalizers/:travelers/:originLat/:originLng/:destLat/:destLng', (req, res) => {
+    let {travelers, originLat, originLng, destLat, destLng} = req.params;
+    let origin = [Number(originLat), Number(originLng)];
+    let destination = [Number(destLat), Number(destLng)];
     let dist = distance.calculateDist(origin, destination)
     const averageObj = {
       distance: dist,
       time: normalizers.timeCalc(dist) * dist,
-      cost: normalizers.costCalc(dist) * dist,
+      cost: normalizers.costCalc(dist, Number(travelers)) * dist,
       emissions: normalizers.emissions * dist
     }
     res.status(200).send(averageObj)
   })
   // Retreive car distance and location data
-  app.get('/api/cars', (req,res) => {
+  app.get('/api/cars/:originLat/:originLng/:destLat/:destLng', (req,res) => {
+    let {originLat, originLng, destLat, destLng} = req.params;
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
     //example data
     // let origin = [37.618972,-122.374889];//SFO
-    let origin = [40.71,-114.03];//Denver
-    let destination = [33.74,-84.38]; //ATL
+    let origin = [Number(originLat), Number(originLng)];
+    let destination = [Number(destLat), Number(destLng)];
     const options = {
       url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
     };
@@ -100,21 +102,18 @@ module.exports = function(app) {
   });
 
 
-  app.get('/api/planes', (req, res) => {
-
+  app.get('/api/planes/:origin/:destination/:date/:travelers/:originLat/:originLng/:destLat/:destLng', (req, res) => {
+    let {origin, destination, date, travelers, originLat, originLng, destLat, destLng} = req.params
     let market = 'US';
     let currency = 'USD';
     let locale = 'en-US';
-    let origin = 'DEN';
-    let destination = 'ATL';
-    let outboundDate = '2016-12-11';
+    let outboundDate = date;
     let locationSchema = 'Iata';
-    let passengers = 1;
     let year = outboundDate.slice(0, 4);
     let month = outboundDate.slice(5, 7);
     let day = outboundDate.slice(8, 10);
-    let pointA = [39, -104]
-    let pointB = [33, -84]
+    let pointA = [Number(originLat), Number(originLng)]
+    let pointB = [Number(destLat), Number(destLng)]
     let planeDist = distance.calculateDist(pointA, pointB); //DEN to ATL
 
 
@@ -125,6 +124,7 @@ module.exports = function(app) {
 
     // url for flight time
     let url = `https://api.flightstats.com/flex/schedules/rest/v1/json/from/${origin}/to/${destination}/departing/${year}/${month}/${day}?appId=${process.env.FLIGHTSTATS_API_ID}&appKey=${process.env.FLIGHTSTATS_API_KEY}`;
+    console.log('flight stats url ' + url)
     // url for flight price
     let options = {
       url: `http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/${market}/${currency}/${locale}/${origin}/${destination}/${outboundDate}/?apiKey=${process.env.SKYSCANNER_API_KEY}`
@@ -195,11 +195,11 @@ module.exports = function(app) {
               // Generate stats object from filtered prices
               let filteredJStatPrices = jStat(filteredPrices);
               let minPrice = filteredJStatPrices.min()
-              resolve({cost: minPrice, type: 'average', emissions: planeStats.emissions})
+              resolve({cost: minPrice * travelers, type: 'average', emissions: planeStats.emissions * travelers})
             })
           } else {
             let minPrice = body.Quotes[0].MinPrice
-            resolve({cost: minPrice, type: 'single day', emissions: planeStats.emissions})
+            resolve({cost: minPrice * travelers, type: 'single day', emissions: planeStats.emissions * travelers})
           }
         })
       })

@@ -5,6 +5,7 @@ Number.prototype.toRadians = function() {
 }
 
 exports.calculateDist = function (coor1, coor2) {
+  console.log('from dist calculator', coor1, coor2)
   let [lat1, lon1] = coor1;
   let [lat2, lon2] = coor2;
   let R = 3959; // miles
