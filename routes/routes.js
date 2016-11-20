@@ -40,47 +40,45 @@ module.exports = function(app) {
     res.status(200).send(averageObj)
   })
   // Retreive car distance and location data
-  app.get('/api/cars/:originLat/:originLng/:destLat/:destLng', (req,res) => {
-    let {originLat, originLng, destLat, destLng} = req.params;
+  app.get('/api/cars/:airOriginLat/:airOriginLng/:airDestLat/:airDestLng/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng', (req,res) => {
+    let {airOriginLat, airOriginLng, airDestLat, airDestLng, driveOriginLat, driveOriginLng, driveDestLat, driveDestLng} = req.params;
     let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
     //example data
-    // let origin = [37.618972,-122.374889];//SFO
-    let origin = [Number(originLat), Number(originLng)];
-    let destination = [Number(destLat), Number(destLng)];
+    // TODO need to fix this.............
+    let airOrigin = [Number(airOriginLat), Number(airOriginLng)];
+    let airDestination = [Number(airDestLat), Number(airDestLng)];
+    let driveOrigin = [Number(driveOriginLat), Number(driveOriginLng)];
+    let driveDestination = [Number(driveDestLat), Number(driveDestLng)];
+    console.log(airDestination)
     const options = {
-      url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=${api_key}`
+      url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${driveOrigin}|${airDestination}&destinations=${airOrigin}|${driveDestination}&key=${api_key}`
     };
     request(options, (err, response, body) => {
       if (err) {
         console.log(err);
       }
-      /* SAMPLE RESPONSE:
-        {
-          "destination_addresses" : [ "Terminal 4, Jamaica, NY 11430, USA" ],
-          "origin_addresses" : [ "Terminal 2, San Francisco, CA 94128, USA" ],
-          "rows" : [ {
-            "elements" : [ {
-              "distance" : { "text" : "2,940 mi", "value" : 4732132 },
-              "duration" : { "text" : "1 day 19 hours", "value" : 153012 }, "status" : "OK"
-            } ]
-          } ],
-          "status" : "OK"
-        }
-      */
+      console.log(body)
+      body = JSON.parse(body)
       //parsing data for distance output in meters, converted to miles
       const MetersPerMile = 1609.34;
-      let distance = JSON.parse(body).rows[0].elements[0].distance.value/MetersPerMile; //2940 Miles
-
+      let distance = body.rows[0].elements[1].distance.value/MetersPerMile; //2940 Miles
+      let carAirDistance = body.rows[0].elements[0].distance.value/MetersPerMile + body.rows[1].elements[1].distance.value/MetersPerMile;
+      console.log('distance to and from airport ' + carAirDistance)
       //parsing data for time output in seconds, converted to hours
       const SecondsPerHour = 3600;
-      let carTime = JSON.parse(body).rows[0].elements[0].duration.value/SecondsPerHour;//1 day 19 hrs
-      let carTimeText = JSON.parse(body).rows[0].elements[0].duration.text;//1 day 19 hrs
+      let carTime = body.rows[0].elements[1].duration.value/SecondsPerHour;//1 day 19 hrs
+      let carTimeText = body.rows[0].elements[1].duration.text;//1 day 19 hrs
+      let carAirTime = body.rows[0].elements[0].duration.value/SecondsPerHour + body.rows[1].elements[1].duration.value/SecondsPerHour;
+      let carAirTimeText = timeCalc(carAirTime);
+      console.log('time to and from airport ' + carAirTimeText + ' ' + carAirTime)
 
       let emissionPerMileSml = .8;
       let emissionPerMileMed = 1.0;
       let emissionPerMileLrg = 1.2;  //1.2 for light truck/SUV
 
       const carEmissions = ((emissionPerMileSml+emissionPerMileMed+ emissionPerMileLrg) / 3)*distance;
+      const carAirEmissions = ((emissionPerMileSml+emissionPerMileMed+ emissionPerMileLrg) / 3)*carAirDistance;
+      console.log('emissions to and from airport ' + carAirEmissions)
 
       let costPerMileSml = .1239;
       let costPerMileMed = .1472;
@@ -88,15 +86,26 @@ module.exports = function(app) {
 
       const costPerMile = (costPerMileSml+costPerMileMed+costPerMileLrg)/3;
       const carCost = distance*costPerMile;
+      const carAirCost = carAirDistance * costPerMile
+      console.log('driving cost to and fro airport ' + carAirCost)
 
       const responseObj = {
-        mode: 'car',
-        cost: carCost,//Dollars
-        emissions: carEmissions,//lbs of CO2
-        time: carTime,//hours
-        timeText: carTimeText
+        car: {
+          mode: 'car',
+          cost: carCost,//Dollars
+          emissions: carEmissions,//lbs of CO2
+          time: carTime,//hours
+          timeText: carTimeText
+        },
+        carToAir: {
+          mode: 'car',
+          cost: carAirCost,
+          emissions: carAirEmissions,
+          time: carAirTime,
+          timeText: carAirTimeText
+        }
       } ;
-
+      console.log(responseObj)
       res.status(200).send(JSON.stringify(responseObj));
     });
   });
