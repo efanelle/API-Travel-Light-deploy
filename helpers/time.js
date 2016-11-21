@@ -13,6 +13,7 @@ module.exports = function (time){
   } else if( hour === 1) {
     duration = hour + ' hour, ' + min + ' min';
   } else {
+    min = Math.round(minutes);
     duration = min + ' min';
   }
   return duration;
