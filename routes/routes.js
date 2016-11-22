@@ -16,8 +16,8 @@ module.exports = function(app) {
   // Retreive car distance and location data
   app.get('/api/cars/:airOriginLat/:airOriginLng/:airDestLat/:airDestLng/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng',
   cars.getCarCosts);
-
-  app.get('/api/cars/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng')
+  //Retrieve Transit costs
+  app.get('/api/transit/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng',transit.getTransitCosts)
 
   app.get('/api/normalizers/:travelers/:originLat/:originLng/:destLat/:destLng', (req, res) => {
     let {travelers, originLat, originLng, destLat, destLng} = req.params;

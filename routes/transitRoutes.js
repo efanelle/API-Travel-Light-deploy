@@ -1,21 +1,23 @@
 const distance = require('../helpers/distance');
 const data = require('../data/cars');
 const request = require('request');
-// const timeCalc = require('../helpers/time')
+const timeCalc = require('../helpers/time')
 
 const getTransitCosts = (req,res) => {
+    console.log('got into get transit costs')
   let {driveOriginLat, driveOriginLng, driveDestLat, driveDestLng} = req.params;
   let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
   let driveOrigin = [Number(driveOriginLat),Number(driveOriginLng)];
   let driveDestination = [Number(driveDestLat),Number(driveDestLng)];
   const options = {
-    url:`https://maps.googleapis.com/maps/api/directions/json?origin=${driveOrigin[0],driveOrigin[1]}&destination=${driveDestination[0],driveDestination[1]}&mode=transit&key=${api_key}`
+    url:`https://maps.googleapis.com/maps/api/directions/json?origin=${driveOrigin}&destination=${driveDestination}&mode=transit&key=${api_key}`
   };
   request(options, (err, response, body) => {
     if (err) {
       console.log(err);
     }
-    // body = JSON.parse(body)
+    console.log('================================= YOU ARE IN THE TRANSIT REQUEST')
+    body = JSON.parse(body)
     // //parsing data for distance output in meters, converted to miles
     // const MetersPerMile = 1609.34;
     // let distance = body.rows[0].elements[1].distance.value/MetersPerMile;
@@ -39,18 +41,26 @@ const getTransitCosts = (req,res) => {
     let transitTimeText = '';
 
 
+    let routeStepArray =  body.routes[0].legs[0]
+    transitTime = Number(routeStepArray.duration.value)/3600;
+    transitTimeText = routeStepArray.duration.text; 
+    transitDistance = Number(routeStepArray.distance.value)/1609.34;
+    transitEmission = (transitDistance*140)/453.592
+    transitCost = (transitDistance * 84)/100;
+  
 
-    
     const responseObj = {
-        mode: 'transit',
-        Cost: transitCost,
-        Emission: transitEmission,
-        Time: transitTime,
-        TimeText: transitTimeText
+        tmode: 'transit',
+        tCost: transitCost,
+        tEmission: transitEmission,
+        tTime: transitTime,
+        tTimeText: transitTimeText
     } ;
-    console.log('the transit response is:', response)
-    console.log('the transit object is', responseObject)
-    res.status(200).send(JSON.stringify(responseObject));
+    console.log('********the transit response is:')
+    console.log(responseObj)
+    console.log('*********end of transit response ***********')
+    // console.log('the transit object is', responseObject)
+    res.status(200).send(JSON.stringify(responseObj));
   });
 }
 

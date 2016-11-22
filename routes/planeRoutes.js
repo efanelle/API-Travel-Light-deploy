@@ -35,7 +35,7 @@ const getPlaneCosts = (req, res) => {
   var departureTZAdjust;
   const p1 = rp(url)
     .then(body => {
-      return new Promise ((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         body = JSON.parse(body);
         db.Airports.findOne({
           where: {
@@ -71,7 +71,7 @@ const getPlaneCosts = (req, res) => {
     })
   const p2 = rp(options)
     .then(body => {
-      return new Promise ((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         body = JSON.parse(body)
         // If no pricing data for particular day, search the full month
         if (body.Quotes.length === 0) {
