@@ -16,7 +16,7 @@ module.exports = function(app) {
   app.get('/api/cars/:airOriginLat/:airOriginLng/:airDestLat/:airDestLng/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng', cars.getCarCosts);
 
   //Retrieve Transit costs
-  app.get('/api/transit/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng',transit.getTransitCosts)
+  app.get('/api/transit/:driveOriginLat/:driveOriginLng/:driveDestLat/:driveDestLng',/*transit.getTransitCosts*/(res, req) => res.status(200).send({}))
 
   // Retreive car distance and location data
 

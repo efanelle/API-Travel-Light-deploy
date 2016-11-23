@@ -7,7 +7,6 @@ const getCarCosts = (req,res) => {
   let {airOriginLat, airOriginLng, airDestLat, airDestLng, driveOriginLat, driveOriginLng, driveDestLat, driveDestLng} = req.params;
 
   let api_key = process.env.GoogleMaps_API_KEY;
-  console.log('api key ' + api_key)
   //if we got planes
   if (airOriginLat !== 'undefined') {
     let airOrigin = [Number(airOriginLat), Number(airOriginLng)];
@@ -41,6 +40,10 @@ const getCarCosts = (req,res) => {
       const carAirCost = carAirDistance * costPerMile
 
       const responseObj = {
+        tripInfo: {
+          destination: body.destination_addresses[1].split(',')[1],
+          origin: body.origin_addresses[0].split(',')[1]
+        },
         car: {
           mode: 'car',
           cost: carCost,//Dollars
@@ -56,6 +59,7 @@ const getCarCosts = (req,res) => {
           timeText: carAirTimeText
         }
       } ;
+      console.log(responseObj)
       res.status(200).send(JSON.stringify(responseObj));
     });
     //if we didnt get planes
@@ -94,7 +98,6 @@ const getCarCosts = (req,res) => {
       console.log(err);
     }
     body = JSON.parse(body)
-    console.log('**********body rows************')
     //parsing data for distance output in meters, converted to miles
     const MetersPerMile = 1609.34;
     let distance = body.rows[0].elements[0].distance.value/MetersPerMile;
@@ -109,6 +112,10 @@ const getCarCosts = (req,res) => {
     const carCost = distance * costPerMile;
 
       const responseObj = {
+        tripInfo: {
+          destination: body.destination_addresses[0].split(',')[1],
+          origin: body.origin_addresses[0].split(',')[1]
+        },
         car: {
           mode: 'car',
           cost: carCost,//Dollars
