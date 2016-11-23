@@ -73,6 +73,7 @@ const getPlaneCosts = (req, res) => {
     .then(body => {
       return new Promise((resolve, reject) => {
         body = JSON.parse(body)
+        console.log(body)
         // If no pricing data for particular day, search the full month
         if (body.Quotes.length === 0) {
           outboundDate = outboundDate.slice(0, -3);
@@ -84,6 +85,7 @@ const getPlaneCosts = (req, res) => {
               console.log(err)
             }
             body = JSON.parse(body)
+            console.log(body)
             // Get array of prices
             let priceArray = body.Quotes.map(quote => quote.MinPrice);
             // Generate statistics object
