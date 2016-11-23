@@ -3,7 +3,8 @@ const distance = require('../helpers/distance');
 const planeInfo = require('../data/planes');
 const rp = require('request-promise');
 const jStat = require('jStat').jStat;
-const timeCalc = require('../helpers/time')
+const timeCalc = require('../helpers/time');
+const request = require('request');
 
 const getPlaneCosts = (req, res) => {
   let {origin, destination, date, travelers, originLat, originLng, destLat, destLng} = req.params
@@ -55,16 +56,22 @@ const getPlaneCosts = (req, res) => {
             // calculate time of flight, adjusting for timezone difference
             console.log('*-*-*-*-*-*-*-*-*-*-*-**--*-*-*-*-*-*-*-*-*-*  Body.scheduledFlights at Planes')
             departureTZAdjust = airport2.Timezone
+            if(body.scheduledFlights.length > 0){
             let times = body.scheduledFlights.map(flight => {
               let arrival = new Date(flight.arrivalTime);
               let departure = new Date(flight.departureTime);
               let utc1 = Date.UTC(arrival.getFullYear(), arrival.getMonth(), arrival.getDate(), arrival.getHours(), arrival.getMinutes())
               let utc2 = Date.UTC(departure.getFullYear(), departure.getMonth(), departure.getDate(), departure.getHours(), departure.getMinutes())
               let adjust = arrivalTZAdjust - departureTZAdjust;
-              return (utc1 - utc2) / 1000 / 60 / 60 - adjust
+              return (utc1 - utc2) / 1000 / 60 / 60 - adjust;
             })
             // add .5 to account for runway time
-            let avgTime = jStat.mean(times) + .5
+            var avgTime = jStat.mean(times) + 1.5;
+            console.log('************************************we actually found time?!?!?! It exists')
+            } else {
+              console.log('************************************approximating the plane time now.')
+              var avgTime = planeDist / 500 + 1.5;
+            } 
             resolve({mode: 'plane', time: avgTime, timeText: timeCalc(avgTime)})
           })
         })
