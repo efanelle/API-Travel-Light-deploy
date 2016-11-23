@@ -53,6 +53,7 @@ const getPlaneCosts = (req, res) => {
           })
           .then(airport2 => {
             // calculate time of flight, adjusting for timezone difference
+            console.log('*-*-*-*-*-*-*-*-*-*-*-**--*-*-*-*-*-*-*-*-*-*  Body.scheduledFlights at Planes')
             departureTZAdjust = airport2.Timezone
             let times = body.scheduledFlights.map(flight => {
               let arrival = new Date(flight.arrivalTime);
