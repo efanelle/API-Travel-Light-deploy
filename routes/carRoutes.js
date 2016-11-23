@@ -5,8 +5,10 @@ const timeCalc = require('../helpers/time')
 
 const getCarCosts = (req,res) => {
   let {airOriginLat, airOriginLng, airDestLat, airDestLng, driveOriginLat, driveOriginLng, driveDestLat, driveDestLng} = req.params;
+
   let api_key = process.env.GoogleMaps_API_KEY;
   console.log('api key ' + api_key)
+  //if we got planes
   if (airOriginLat !== 'undefined') {
     let airOrigin = [Number(airOriginLat), Number(airOriginLng)];
     let airDestination = [Number(airDestLat), Number(airDestLng)];
@@ -20,7 +22,6 @@ const getCarCosts = (req,res) => {
         console.log(err);
       }
       body = JSON.parse(body)
-      console.log(body)
       //parsing data for distance output in meters, converted to miles
       const MetersPerMile = 1609.34;
       let distance = body.rows[0].elements[1].distance.value/MetersPerMile;
@@ -57,6 +58,7 @@ const getCarCosts = (req,res) => {
       } ;
       res.status(200).send(JSON.stringify(responseObj));
     });
+    //if we didnt get planes
   } else {
     let driveOrigin = [Number(driveOriginLat), Number(driveOriginLng)];
     let driveDestination = [Number(driveDestLat), Number(driveDestLng)];
@@ -81,6 +83,31 @@ const getCarCosts = (req,res) => {
       const costPerMile = (data.carCosts.small + data.carCosts.med + data.carCosts.large)/3;
       const carCost = distance * costPerMile;
 
+  let api_key = process.env.GoogleMaps_API_KEY;
+  let driveOrigin = [Number(driveOriginLat), Number(driveOriginLng)];
+  let driveDestination = [Number(driveDestLat), Number(driveDestLng)];
+  const options = {
+    url:`https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${driveOrigin}&destinations=${driveDestination}&key=${api_key}`
+  };
+  request(options, (err, response, body) => {
+    if (err) {
+      console.log(err);
+    }
+    body = JSON.parse(body)
+    console.log('**********body rows************')
+    //parsing data for distance output in meters, converted to miles
+    const MetersPerMile = 1609.34;
+    let distance = body.rows[0].elements[0].distance.value/MetersPerMile;
+    //parsing data for time output in seconds, converted to hours
+    const SecondsPerHour = 3600;
+    let carTime = body.rows[0].elements[0].duration.value / SecondsPerHour;
+    let carTimeText = body.rows[0].elements[0].duration.text;
+    // using static data for emissions
+    const carEmissions = ((data.carEmissions.small + data.carEmissions.med + data.carEmissions.large) / 3)*distance;
+    // using static data for cost per mile
+    const costPerMile = (data.carCosts.small + data.carCosts.med + data.carCosts.large)/3;
+    const carCost = distance * costPerMile;
+
       const responseObj = {
         car: {
           mode: 'car',
@@ -90,10 +117,12 @@ const getCarCosts = (req,res) => {
           timeText: carTimeText
         }
       }
-      console.log('response object' + responseObj)
+      console.log('response object')
+      console.log(responseObj)
       res.status(200).send(JSON.stringify(responseObj));
     })
-  }
+  })
+}
 }
 
 module.exports = {

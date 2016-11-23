@@ -6,7 +6,7 @@ const timeCalc = require('../helpers/time')
 const getTransitCosts = (req,res) => {
     console.log('got into get transit costs')
   let {driveOriginLat, driveOriginLng, driveDestLat, driveDestLng} = req.params;
-  let api_key = 'AIzaSyActkAY-HutxFQ7CS9-VJQUptb0M5IRl6k';
+  let api_key = process.env.GoogleMaps_API_KEY;
   let driveOrigin = [Number(driveOriginLat),Number(driveOriginLng)];
   let driveDestination = [Number(driveDestLat),Number(driveDestLng)];
   const options = {
