@@ -1,6 +1,7 @@
 'use strict'
 const mysql = require('mysql');
 const Sequelize = require('sequelize');
+const rp = require('request-promise')
 
 // Connect to AWS RDS database
 const connection = new Sequelize('AirportLocations', process.env.RDS_USERNAME, process.env.RDS_PASSWORD, {
@@ -21,6 +22,7 @@ const Airports = connection.define('Airports', {
               autoIncrement: true},
   Name:    Sequelize.STRING(70),
   City:    Sequelize.STRING(39),
+  State:   Sequelize.STRING(3),
   Country: Sequelize.STRING(32),
   FAA_IATA: Sequelize.STRING(9),
   ICAO:    Sequelize.STRING(9),
@@ -33,15 +35,6 @@ const Airports = connection.define('Airports', {
 }, {timestamps: false});
 
 Airports.sync();
-
-// Example query, raw: true will give just the needed results
-/* Airports.findAll({
-  where: {
-    City: 'Atlanta'
-  },
-  raw: true
-})
-.then((results) => {console.log(results)}) */
 
 
 exports.Airports = Airports
