@@ -28,6 +28,7 @@ const generateTrainUrl = function (origin, destination, date) {
 }
 
 const getTrainCosts = async (function(req, res) {
+  console.log(req.params)
   const { origin, destination, travelers, date, distance } = req.params
   const url = await (generateTrainUrl(origin, destination, date))
   console.log('urllllllllllllllllllllllllllll ' + url)
@@ -54,8 +55,8 @@ const getTrainCosts = async (function(req, res) {
       }
       return results;
     }))
-    console.log(trains.trainEmissions)
     content.emissions = trains.trainEmissions.perMile * distance * travelers;
+    content.cost = content.cost * travelers;
     console.log('sending price data ' + content)
     res.status(200).send(content)
   }), 2500)
