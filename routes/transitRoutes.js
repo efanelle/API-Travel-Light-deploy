@@ -5,7 +5,7 @@ const timeCalc = require('../helpers/time')
 
 const getTransitCosts = (req,res) => {
     console.log('got into get transit costs')
-  let {driveOriginLat, driveOriginLng, driveDestLat, driveDestLng} = req.params;
+  let {driveOriginLat, driveOriginLng, driveDestLat, driveDestLng, travelers} = req.params;
   let api_key = process.env.GoogleMaps_API_KEY;
   let driveOrigin = [Number(driveOriginLat),Number(driveOriginLng)];
   let driveDestination = [Number(driveDestLat),Number(driveDestLng)];
@@ -43,18 +43,18 @@ const getTransitCosts = (req,res) => {
 
     let routeStepArray =  body.routes[0].legs[0]
     transitTime = Number(routeStepArray.duration.value)/3600;
-    transitTimeText = routeStepArray.duration.text; 
+    transitTimeText = routeStepArray.duration.text;
     transitDistance = Number(routeStepArray.distance.value)/1609.34;
     transitEmission = (transitDistance*140)/453.592
-    transitCost = (transitDistance * 84)/100;
-  
+    transitCost = (transitDistance * 20.4)/100 * travelers;
+
 
     const responseObj = {
-        tmode: 'transit',
-        tCost: transitCost,
-        tEmission: transitEmission,
-        tTime: transitTime,
-        tTimeText: transitTimeText
+        mode: 'transit',
+        cost: transitCost,
+        emissions: transitEmission,
+        time: transitTime,
+        timeText: transitTimeText
     } ;
     console.log('********the transit response is:')
     console.log(responseObj)
