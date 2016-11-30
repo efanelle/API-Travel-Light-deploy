@@ -14,6 +14,7 @@ module.exports = function(app) {
   app.get('/api/airports', airports.getAllAirports)
 
   //Retrieving car information
+  app.get('/api/carModels', carList.getAllCars)
 
   // Averages for data display purposes
   app.get('/api/normalizers/:travelers/:originLat/:originLng/:destLat/:destLng/:tripType', averages.getAveragesByTripLength)
