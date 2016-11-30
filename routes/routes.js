@@ -6,11 +6,15 @@ const planes = require('./planeRoutes');
 const transit = require('./transitRoutes');
 const trains = require('./trainRoutes');
 const walking = require('./walkingRoutes');
+const carList = require('./carModelRoutes')
 
 module.exports = function(app) {
 
   //retrieving all US airports
   app.get('/api/airports', airports.getAllAirports)
+
+  //Retrieving car information
+  app.get('/api/carModels', carList.getAllCars)
 
   // Averages for data display purposes
   app.get('/api/normalizers/:travelers/:originLat/:originLng/:destLat/:destLng/:tripType', averages.getAveragesByTripLength)
