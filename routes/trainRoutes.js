@@ -28,10 +28,10 @@ const generateTrainUrl = function (origin, destination, date) {
 }
 
 const getTrainCosts = async (function(req, res) {
-  console.log(req.params)
+  //console.log(req.params)
   const { origin, destination, travelers, date, distance } = req.params
   const url = await (generateTrainUrl(origin, destination, date))
-  console.log('urllllllllllllllllllllllllllll ' + url)
+  //console.log('urllllllllllllllllllllllllllll ' + url)
   const instance = await (phantom.create(['--load-images=no'], {
     phantomPath: '/usr/local/bin/phantomjs'
   }))
@@ -53,8 +53,10 @@ const getTrainCosts = async (function(req, res) {
         time: numericTime,
         mode: 'train'
       }
+      console.log('********results are:', results)
       return results;
     }))
+    console.log('------------the content of the trains--------------------', content)
     content.emissions = trains.trainEmissions.perMile * distance * travelers;
     content.cost = content.cost * travelers;
     console.log('sending price data ' + content)

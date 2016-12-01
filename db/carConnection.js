@@ -25,7 +25,8 @@ const cars = carConnection.define('cars',
         MPG: Sequelize.INTEGER,
         Make: Sequelize.STRING(50),
         CarModel: Sequelize.STRING(50),
-        YEAR: Sequelize.STRING(4)
+        Year: Sequelize.STRING(4),
+        FullName: Sequelize.STRING(150)
     }, 
     {timestamps:false}
 );
