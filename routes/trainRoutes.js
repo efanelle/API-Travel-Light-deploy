@@ -28,17 +28,12 @@ const generateTrainUrl = function (origin, destination, date) {
 }
 
 const getTrainCosts = async (function(req, res) {
-  //console.log(req.params)
   const { origin, destination, travelers, date, distance } = req.params
   const url = await (generateTrainUrl(origin, destination, date))
-  //console.log('urllllllllllllllllllllllllllll ' + url)
   const instance = await (phantom.create(['--load-images=no'], {
     phantomPath: '/usr/local/bin/phantomjs'
   }))
   const page = await (instance.createPage())
-  // await (page.on('onResourceRequested', true, function (requestData, networkRequest) {
-  //     console.log(requestData.url);
-  //   }))
   const status = await (page.open(url));
   console.log('train data status ' + status)
   await (page.injectJs('http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
