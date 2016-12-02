@@ -72,6 +72,7 @@ const getTrainCosts = async (function(req, res) {
     }), 1000)
   }
   getTraindata();
+
 })
 
 module.exports = {
