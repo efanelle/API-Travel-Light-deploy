@@ -74,7 +74,6 @@ const getCarCosts = (req,res) => {
         console.log(err);
       }
       body = JSON.parse(body)
-      console.log(body)
       const MetersPerMile = 1609.34;
       let distance = body.rows[0].elements[0].distance.value/MetersPerMile;
       //parsing data for time output in seconds, converted to hours
@@ -124,8 +123,6 @@ const getCarCosts = (req,res) => {
           timeText: carTimeText
         }
       }
-      console.log('response object')
-      console.log(responseObj)
       res.status(200).send(JSON.stringify(responseObj));
     })
   })

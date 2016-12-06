@@ -67,7 +67,6 @@ const getPlaneCosts = (req, res) => {
             })
             // add .5 to account for runway time
             var avgTime = jStat.mean(times) + 1.5;
-            console.log('************************************we actually found time?!?!?! It exists')
             } else {
               console.log('************************************approximating the plane time now.')
               var avgTime = planeDist / 500 + 1.5;
@@ -81,7 +80,6 @@ const getPlaneCosts = (req, res) => {
     .then(body => {
       return new Promise((resolve, reject) => {
         body = JSON.parse(body)
-        console.log(body)
         // If no pricing data for particular day, search the full month
         if (body.Quotes.length === 0) {
           outboundDate = outboundDate.slice(0, -3);
@@ -93,7 +91,6 @@ const getPlaneCosts = (req, res) => {
               console.log(err)
             }
             body = JSON.parse(body)
-            console.log(body)
             // Get array of prices
             let priceArray = body.Quotes.map(quote => quote.MinPrice);
             // Generate statistics object

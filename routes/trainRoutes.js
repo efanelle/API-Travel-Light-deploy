@@ -42,26 +42,41 @@ const getTrainCosts = async (function(req, res) {
   const status = await (page.open(url));
   console.log('train data status ' + status)
   await (page.injectJs('http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'));
-  setTimeout(async (() => {
-    let content = await (page.evaluate(function() {
-      const time = $('span.booking-duration').html();
-      const times = time.split(' ');
-      const numericTime = Number(times[0].slice(0, -1)) + Number(times[1].slice(0, -1)) / 60;
-      results = {
-        cost: Number($('span.price').html().slice(1)),
-        timeText: time,
-        time: numericTime,
-        mode: 'train'
+  let content;
+  let attempts = 1;
+  function getTraindata() {
+    if (attempts > 5) {
+      res.status(404).send();
+    }
+    return setTimeout(async (() => {
+      let testPage = await (page.evaluate(function() {
+        const testTime = $('span.booking-duration').html();
+        return !!testTime;
+      }))
+      if (testPage) {
+        content = await (page.evaluate(function() {
+          const time = $('span.booking-duration').html();
+          const times = time.split(' ');
+          const numericTime = Number(times[0].slice(0, -1)) + Number(times[1].slice(0, -1)) / 60;
+          results = {
+            cost: Number($('span.price').html().slice(1)),
+            timeText: time,
+            time: numericTime,
+            mode: 'train'
+          }
+          return results;
+        }))
+      } else {
+        attempts++;
+        return getTraindata();
       }
-      console.log('********results are:', results)
-      return results;
-    }))
-    console.log('------------the content of the trains--------------------', content)
-    content.emissions = trains.trainEmissions.perMile * distance * travelers;
-    content.cost = content.cost * travelers;
-    console.log('sending price data ' + content)
-    res.status(200).send(content)
-  }), 2500)
+      content.emissions = trains.trainEmissions.perMile * distance * travelers;
+      content.cost = content.cost * travelers;
+      console.log('sending price data ' + content)
+      res.status(200).send(content)
+    }), 1000)
+  }
+  getTraindata();
 })
 
 module.exports = {
